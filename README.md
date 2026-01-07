@@ -199,4 +199,4 @@ Once the Pi is connected to your Wi-Fi, you can access it using its hostname. By
 *   Try: [http://raspberrypi.local:5000/](http://raspberrypi.local:5000/)
 *   If you changed the hostname (via `sudo raspi-config`), use `http://<new-hostname>.local:5000/`.
 
-*Note: This requires mDNS support (Avahi), which is standard on most devices. If it doesn't work, you'll need to find the Pi's IP address from your router.*
+Credits: Built on the [ozkatz/pi-remote-ducky](https://github.com/ozkatz/pi-remote-ducky) core; refactored for modern systems with expanded features and a revamped UI.
