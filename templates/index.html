@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Remote Ducky - Modern Console</title>
+    
+    <!-- Local fallback for offline reliability -->
+    <script src="{{ url_for('static', filename='vendor/tailwind.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/alpine.min.js') }}" defer></script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        body { background-color: #0f172a; color: #f8fafc; }
+        .editor-bg { background-color: #020617; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased bg-slate-900 text-slate-200" x-data="duckyApp()">
+
+    <!-- Header / Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center text-white font-bold">D</div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Pi Remote Ducky <span class="text-sky-500 font-normal">v2.0</span></h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Pi Online
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- Payload Library Sidebar -->
+            <aside class="lg:w-80 w-full flex flex-col gap-6">
+                <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            <h2 class="text-lg font-bold text-white">Library</h2>
+                        </div>
+                        <span class="text-[10px] font-mono bg-slate-700 px-2 py-0.5 rounded text-slate-400">/scripts</span>
+                    </div>
+                    
+                    <div class="space-y-1 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- Jinja2 loop for initial load -->
+                        {% for script in scripts %}
+                        <div class="group flex items-center justify-between p-2 rounded-lg transition-all cursor-pointer hover:bg-slate-700/50 border border-transparent hover:border-slate-600/50">
+                            <div class="flex items-center gap-3 truncate">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <a href="/?load={{script}}" class="text-sm font-medium text-slate-300 group-hover:text-white truncate">{{ script }}</a>
+                            </div>
+                            <a href="/delete?script={{script}}" 
+                               onclick="return confirm('Delete {{script}}?')"
+                               class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-slate-700/50 text-[11px] text-slate-500 leading-relaxed italic text-center">
+                        Secure HID Console
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Editor Area -->
+            <main class="flex-1 flex flex-col gap-6">
+                <form method="post" action="/" class="flex flex-col gap-6">
+                    <div class="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl flex flex-col">
+                        <!-- Editor Toolbar -->
+                        <div class="bg-slate-800/80 backdrop-blur-md px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-700">
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs font-mono text-slate-500 uppercase tracking-widest">Live Editor</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button type="submit" name="action" value="validate" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                                    Validate
+                                </button>
+                                <button type="button" @click="showSaveModal = true" class="px-4 py-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                                    Save to Lib
+                                </button>
+                                <button type="submit" name="action" value="run" class="px-6 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-sky-900/20 flex items-center gap-2">
+                                    Run Payload
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Code Textarea -->
+                        <div class="relative group editor-bg">
+                            <textarea 
+                                name="script"
+                                class="w-full h-[600px] bg-transparent text-emerald-400 p-6 font-mono text-sm focus:outline-none focus:ring-0 resize-none leading-6"
+                                placeholder="REM Write your DuckyScript here..."
+                                spellcheck="false"
+                            >{{ form.get('script', '') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    {% if error %}
+                    <div class="bg-red-900/20 border border-red-500/30 text-red-400 rounded-2xl p-4 text-sm">{{ error }}</div>
+                    {% endif %}
+                    {% if validated %}
+                    <div class="bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 rounded-2xl p-4 text-sm">Validation Successful</div>
+                    {% endif %}
+
+                    <!-- Save Modal -->
+                    <div x-show="showSaveModal" 
+                         x-cloak
+                         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4"
+                         @keydown.escape.window="showSaveModal = false">
+                        
+                        <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl w-full max-w-md" @click.away="showSaveModal = false">
+                            <h3 class="text-xl font-bold text-white mb-6">Save Payload</h3>
+                            <input type="text" 
+                                   name="name" 
+                                   placeholder="payload_name.ducky" 
+                                   class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:ring-2 focus:ring-sky-500 outline-none mb-6 font-mono text-sm">
+                            
+                            <div class="flex items-center gap-3">
+                                <button type="button" @click="showSaveModal = false" class="flex-1 px-4 py-4 text-sm font-bold text-slate-400">Cancel</button>
+                                <button type="submit" name="action" value="save" class="flex-1 px-4 py-4 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl text-sm font-bold">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function duckyApp() {
+            return {
+                showSaveModal: false
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[Unit]
+Description=USB Gadget HID Setup
+After=local-fs.target
+Before=ducky-server.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/kbsetup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
