@@ -1,5 +1,5 @@
 
-# Pi Ducky Server
+# PI-Remote-HID
 
 ## Description
 
